@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>С Днём Рождения, Светик!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none; /* чтобы не выделялся текст при клике на кнопку */
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(145deg, #2b3b4e 0%, #1d2c3a 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', 'Quicksand', system-ui, -apple-system, 'Roboto', 'Helvetica Neue', sans-serif;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* основной контейнер-открытка */
+        .card-container {
+            perspective: 1200px;
+            width: 100%;
+            max-width: 550px;
+            margin: 0 auto;
+        }
+
+        .birthday-card {
+            background: #fffef7;
+            border-radius: 48px 48px 56px 56px;
+            box-shadow: 0 30px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 245, 200, 0.5) inset;
+            overflow: hidden;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(0px);
+            transform-style: preserve-3d;
+        }
+
+        /* цветочная шапка */
+        .flowers-header {
+            background: linear-gradient(135deg, #f9c5d1, #fce4b2, #f9a8d4);
+            padding: 24px 20px 16px;
+            text-align: center;
+            border-bottom: 6px solid #ffb347;
+            position: relative;
+        }
+
+        .flowers-header::before {
+            content: "🌸 🌼 🌻 🌷 🌺";
+            position: absolute;
+            bottom: -15px;
+            left: 0;
+            right: 0;
+            font-size: 32px;
+            letter-spacing: 12px;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: #9b2e2e;
+            text-shadow: 2px 2px 0 #ffdd99;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .greeting-name {
+            font-size: 2.5rem;
+            background: linear-gradient(120deg, #e65c00, #f9c45a);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            font-weight: bold;
+            display: inline-block;
+            text-shadow: none;
+        }
+
+        .message {
+            padding: 30px 24px 20px;
+            text-align: center;
+        }
+
+        .message p {
+            font-size: 1.25rem;
+            line-height: 1.5;
+            color: #2d3e50;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+
+        .signature {
+            font-size: 1.2rem;
+            font-style: italic;
+            color: #b45f2b;
+            margin-top: 20px;
+            border-top: 2px dashed #ffcd94;
+            padding-top: 18px;
+            display: inline-block;
+            width: auto;
+        }
+
+        /* зона открытки с цветочками (иллюстрация) */
+        .flower-illustration {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 15px 20px 25px;
+            background: #fff9ef;
+            border-radius: 60px;
+            padding: 20px 15px;
+            box-shadow: inset 0 0 0 2px white, 0 8px 18px rgba(0,0,0,0.05);
+        }
+
+        .flower-icon {
+            font-size: 3rem;
+            filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2));
+            transition: transform 0.2s ease;
+            display: inline-block;
+        }
+
+        .flower-icon:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        /* кнопка-сюрприз */
+        .surprise-btn {
+            background: linear-gradient(95deg, #ff8c5a, #ff4162);
+            border: none;
+            color: white;
+            font-size: 1.8rem;
+            font-weight: bold;
+            padding: 16px 28px;
+            border-radius: 60px;
+            cursor: pointer;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+            transition: 0.1s linear;
+            margin: 15px auto 35px;
+            display: block;
+            width: 80%;
+            font-family: inherit;
+            letter-spacing: 2px;
+            backdrop-filter: blur(2px);
+        }
+
+        .surprise-btn:active {
+            transform: scale(0.97);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        }
+
+        /* скрытая открытка с цветами (появляется при клике) */
+        .hidden-card {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.7s cubic-bezier(0.2, 0.9, 0.4, 1.1), opacity 0.5s ease, margin 0.3s;
+            background: #fff6e8;
+            border-radius: 48px;
+            margin: 0 8px 8px 8px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .hidden-card.show {
+            max-height: 550px;
+            opacity: 1;
+            margin: 20px 8px 20px 8px;
+            padding: 18px 12px 24px;
+        }
+
+        .popup-flowers {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 18px 0 12px;
+        }
+
+        .popup-flowers span {
+            font-size: 2.8rem;
+            animation: gentleWave 0.6s ease;
+            display: inline-block;
+        }
+
+        .secret-message {
+            font-size: 1.4rem;
+            background: #ffe0b5;
+            display: inline-block;
+            padding: 12px 18px;
+            border-radius: 40px;
+            margin-top: 12px;
+            font-weight: 600;
+            color: #ab4e2a;
+        }
+
+        @keyframes gentleWave {
+            0% { transform: scale(0.2) rotate(0deg); opacity: 0; }
+            80% { transform: scale(1.2) rotate(8deg);}
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        /* салют canvas */
+        #fireworks-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #c0cfdf;
+            margin-top: 10px;
+            padding: 8px;
+        }
+
+        @media (max-width: 550px) {
+            .surprise-btn { font-size: 1.3rem; padding: 14px 20px; width: 90%; }
+            h1 { font-size: 1.7rem; }
+            .greeting-name { font-size: 1.9rem; }
+            .message p { font-size: 1rem; }
+            .flower-icon { font-size: 2.4rem; }
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="fireworks-canvas"></canvas>
+
+<div class="card-container">
+    <div class="birthday-card">
+        <div class="flowers-header">
+            <h1>🎂 С Днём Рождения, <span class="greeting-name">Светик</span>! 🎉</h1>
+            <div style="font-size: 1.1rem; color:#b43b2a;">✨ Самый тёплый лучик ✨</div>
+        </div>
+
+        <div class="message">
+            <p>💖 Дорогая <strong>Светик</strong>! 💖</p>
+            <p>Пусть этот день подарит море улыбок,<br>
+            аромат цветов и яркие мгновения счастья! 🌷</p>
+            <p>Даже если мы сейчас редко общаемся,<br>
+            ты всегда в моём сердце 💕</p>
+            <div class="signature">
+                🌻 С любовью и теплом, <strong>Женя</strong> 🌻
+            </div>
+        </div>
+
+        <!-- декоративные цветочки -->
+        <div class="flower-illustration">
+            <span class="flower-icon">🌸</span>
+            <span class="flower-icon">🌼</span>
+            <span class="flower-icon">🌻</span>
+            <span class="flower-icon">🌺</span>
+            <span class="flower-icon">🌷</span>
+            <span class="flower-icon">💐</span>
+        </div>
+
+        <!-- волшебная кнопка -->
+        <button class="surprise-btn" id="surpriseBtn">🎁 Нажми на сюрприз! 🎁</button>
+
+        <!-- скрытая открытка, которая появляется с цветочками -->
+        <div id="extraCard" class="hidden-card">
+            <div class="popup-flowers">
+                <span>🌷</span><span>🌹</span><span>💮</span><span>🏵️</span><span>🌼</span><span>🌸</span><span>🌻</span>
+            </div>
+            <div class="secret-message">
+                ✨ Светик! Ты — невероятный человек! ✨<br>
+                Пусть цветы цветут в душе всегда! 💐
+            </div>
+            <div style="margin: 12px 0 6px; font-size: 1rem; color:#c44f2b;">Обнимаю, твоя Женя 🤗</div>
+        </div>
+    </div>
+    <footer>💖 нажми на кнопку — будет сюрприз и салют 💖</footer>
+</div>
+
+<script>
+    (function() {
+        // ---------- САЛЮТ (canvas эффекты) ----------
+        const canvas = document.getElementById('fireworks-canvas');
+        let ctx = canvas.getContext('2d');
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+        let particles = [];
+        let rockets = [];
+        let animationId = null;
+        let activeFireworks = false;
+        let timeoutStop = null;
+
+        function resizeCanvas() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+        }
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            // перерисовка, если салют активен, подстроим
+            if (activeFireworks) {
+                // обновляем позиции, просто перерисовка пройдёт
+            }
+        });
+
+        // случайное число
+        function random(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        // частица салюта
+        class Particle {
+            constructor(x, y, hue, radius = 3) {
+                this.x = x;
+                this.y = y;
+                this.size = radius * (0.6 + Math.random() * 0.8);
+                this.speedX = (Math.random() - 0.5) * 7;
+                this.speedY = (Math.random() - 0.5) * 7 - 1.5;
+                this.gravity = 0.15;
+                this.life = 1.0;
+                this.decay = 0.012 + Math.random() * 0.02;
+                this.hue = hue;
+                this.alpha = 1;
+            }
+            update() {
+                this.speedY += this.gravity;
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.life -= this.decay;
+                this.alpha = this.life * 0.9;
+                return this.life > 0.02;
+            }
+            draw(ctx) {
+                ctx.save();
+                ctx.globalAlpha = this.alpha * 0.9;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `hsl(${this.hue}, 100%, 60%)`;
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        // создаём взрыв салюта в точке (x, y)
+        function createExplosion(x, y) {
+            const hue = random(0, 360);
+            const particleCount = 55 + Math.floor(Math.random() * 40);
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle(x, y, hue, random(2.2, 4.5)));
+            }
+            // добавим немного дополнительных разноцветных
+            for (let i = 0; i < 18; i++) {
+                let extraHue = (hue + random(-60, 60) + 360) % 360;
+                particles.push(new Particle(x, y, extraHue, random(1.8, 3.5)));
+            }
+        }
+
+        // ракета, поднимающаяся вверх и взрывающаяся
+        class Rocket {
+            constructor(x, y, targetY, hue) {
+                this.x = x;
+                this.y = y;
+                this.targetY = targetY;
+                this.speed = -6.5;
+                this.hue = hue;
+                this.active = true;
+                this.trail = [];
+            }
+            update() {
+                if (!this.active) return false;
+                this.trail.push({x: this.x, y: this.y, life: 1.0});
+                if (this.trail.length > 8) this.trail.shift();
+                this.y += this.speed;
+                if (this.y <= this.targetY) {
+                    // взрыв!
+                    createExplosion(this.x, this.y);
+                    return false; // ракета исчезает
+                }
+                return true;
+            }
+            draw(ctx) {
+                // рисуем хвост
+                for (let i = 0; i < this.trail.length; i++) {
+                    const t = this.trail[i];
+                    const alpha = t.life * 0.6;
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, 3 * (i / this.trail.length), 0, Math.PI * 2);
+                    ctx.fillStyle = `hsla(${this.hue}, 90%, 65%, ${alpha})`;
+                    ctx.fill();
+                }
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = `hsl(${this.hue}, 100%, 65%)`;
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+                ctx.fillStyle = "white";
+                ctx.fill();
+            }
+        }
+
+        function addRandomRocket() {
+            if (!activeFireworks) return;
+            const x = random(80, width - 80);
+            const targetY = random(80, height * 0.45);
+            const startY = height - 20;
+            const hue = random(0, 360);
+            rockets.push(new Rocket(x, startY, targetY, hue));
+        }
+
+        let rocketInterval = null;
+
+        function startFireworks() {
+            if (activeFireworks) {
+                // если уже активен, добавим дополнительную волну взрывов
+                for(let i = 0; i < 8; i++) {
+                    setTimeout(() => {
+                        if(activeFireworks) {
+                            const randX = random(100, width-100);
+                            const randY = random(100, height*0.6);
+                            createExplosion(randX, randY);
+                        }
+                    }, i * 70);
+                }
+                return;
+            }
+            activeFireworks = true;
+            resizeCanvas();
+            // очищаем старые частицы и ракеты
+            particles = [];
+            rockets = [];
+            if (rocketInterval) clearInterval(rocketInterval);
+            // добавляем сразу серию взрывов и ракет
+            for (let i = 0; i < 6; i++) {
+                setTimeout(() => {
+                    if (activeFireworks) addRandomRocket();
+                }, i * 150);
+            }
+            // интервал для ракет
+            rocketInterval = setInterval(() => {
+                if (activeFireworks) addRandomRocket();
+            }, 500);
+            // также спонтанные взрывы
+            let burstInterval = setInterval(() => {
+                if (activeFireworks) {
+                    const randX = random(80, width - 80);
+                    const randY = random(120, height * 0.7);
+                    createExplosion(randX, randY);
+                } else {
+                    clearInterval(burstInterval);
+                }
+            }, 700);
+            
+            // анимация
+            if (animationId) cancelAnimationFrame(animationId);
+            function animate() {
+                if (!activeFireworks && particles.length === 0 && rockets.length === 0) {
+                    if (animationId) cancelAnimationFrame(animationId);
+                    animationId = null;
+                    ctx.clearRect(0, 0, width, height);
+                    return;
+                }
+                ctx.clearRect(0, 0, width, height);
+                // обновляем и фильтруем ракеты
+                rockets = rockets.filter(r => r.update());
+                rockets.forEach(r => r.draw(ctx));
+                // частицы
+                particles = particles.filter(p => p.update());
+                particles.forEach(p => p.draw(ctx));
+                animationId = requestAnimationFrame(animate);
+            }
+            animate();
+            
+            // автоматически остановить салют через 12 секунд (но можно нажать повторно для продления)
+            if (timeoutStop) clearTimeout(timeoutStop);
+            timeoutStop = setTimeout(() => {
+                if (activeFireworks) {
+                    activeFireworks = false;
+                    if (rocketInterval) { clearInterval(rocketInterval); rocketInterval = null; }
+                    // не удаляем мгновенно частицы, они доживут сами и анимация завершится
+                }
+            }, 10000);
+        }
+
+        function stopFireworksAfterDelay() {
+            if (timeoutStop) clearTimeout(timeoutStop);
+            timeoutStop = setTimeout(() => {
+                if (activeFireworks) {
+                    activeFireworks = false;
+                    if (rocketInterval) { clearInterval(rocketInterval); rocketInterval = null; }
+                }
+            }, 8000);
+        }
+
+        // ----- ОТКРЫТКА И САЛЮТ ПО КНОПКЕ -----
+        const surpriseBtn = document.getElementById('surpriseBtn');
+        const extraCardDiv = document.getElementById('extraCard');
+        let alreadyClicked = false; // для эффекта, но можно нажимать несколько раз - сюрприз каждый раз
+
+        function showFlowerCardAndFireworks() {
+            // показываем скрытую открытку с цветочками
+            extraCardDiv.classList.add('show');
+            // запускаем салют
+            startFireworks();
+            // также добавим особый цветочный эффект — дополнительные взрывы с цветочной тематикой
+            setTimeout(() => {
+                if (activeFireworks) {
+                    for (let i=0;i<4;i++) {
+                        setTimeout(() => {
+                            const fx = random(width*0.2, width*0.8);
+                            const fy = random(height*0.2, height*0.7);
+                            createExplosion(fx, fy);
+                        }, i*180);
+                    }
+                }
+            }, 200);
+            // вибрация кнопки (радость)
+            surpriseBtn.style.transform = "scale(0.98)";
+            setTimeout(() => { surpriseBtn.style.transform = ""; }, 120);
+            
+            // если нужно, повторно настроить остановку салюта (чтобы не висел вечно)
+            stopFireworksAfterDelay();
+        }
+
+        // если нажать ещё раз, то добавим салют и повторим появление открытки (если скрыта, покажет снова)
+        surpriseBtn.addEventListener('click', () => {
+            // каждый клик — новые фейерверки, открытка появляется (если была скрыта, покажем)
+            if (!extraCardDiv.classList.contains('show')) {
+                extraCardDiv.classList.add('show');
+            } else {
+                // добавим мини-анимацию: встряхнуть цветы в открытке
+                const flowerSpans = extraCardDiv.querySelectorAll('.popup-flowers span');
+                flowerSpans.forEach((span, idx) => {
+                    span.style.animation = 'none';
+                    span.offsetHeight;
+                    span.style.animation = 'gentleWave 0.4s ease';
+                    setTimeout(() => { span.style.animation = ''; }, 400);
+                });
+                const secretMsg = extraCardDiv.querySelector('.secret-message');
+                if(secretMsg) {
+                    secretMsg.style.transform = 'scale(1.02)';
+                    setTimeout(() => { secretMsg.style.transform = ''; }, 200);
+                }
+            }
+            startFireworks(); // запускаем салют (или добавляем новую волну)
+            stopFireworksAfterDelay();
+            // эффект конфетти из цветочных эмодзи на секунду
+            createFlowerEmojiRain();
+        });
+
+        // дополнительная радость: несколько плавающих цветочков из эмодзи (необязательно, но мило)
+        function createFlowerEmojiRain() {
+            const container = document.body;
+            for (let i=0;i<24;i++) {
+                const flowerSpan = document.createElement('div');
+                const flowersList = ['🌸','🌼','🌻','🌷','🌺','💐','🌹','🏵️'];
+                const randomFlower = flowersList[Math.floor(Math.random() * flowersList.length)];
+                flowerSpan.innerText = randomFlower;
+                flowerSpan.style.position = 'fixed';
+                flowerSpan.style.left = Math.random() * window.innerWidth + 'px';
+                flowerSpan.style.top = '-30px';
+                flowerSpan.style.fontSize = (20 + Math.random() * 30) + 'px';
+                flowerSpan.style.pointerEvents = 'none';
+                flowerSpan.style.zIndex = '1001';
+                flowerSpan.style.opacity = '0.8';
+                flowerSpan.style.filter = 'drop-shadow(0 0 4px gold)';
+                const duration = 2 + Math.random() * 2.5;
+                flowerSpan.style.transition = `top ${duration}s linear, transform ${duration*0.6}s ease`;
+                flowerSpan.style.transform = `rotate(${Math.random() * 80 - 40}deg)`;
+                container.appendChild(flowerSpan);
+                requestAnimationFrame(() => {
+                    flowerSpan.style.top = window.innerHeight + 30 + 'px';
+                    flowerSpan.style.transform = `rotate(${Math.random() * 360}deg) scale(0.9)`;
+                });
+                setTimeout(() => {
+                    if(flowerSpan && flowerSpan.remove) flowerSpan.remove();
+                }, duration * 1000);
+            }
+        }
+
+        // инициализация resize, чтобы canvas был аккуратен
+        resizeCanvas();
+        // при загрузке можно не запускать салют, только по клику
+        // но для красоты: при первом наведении на кнопку лёгкое свечение? не нужно.
+
+        // добавим красивый эффект при появлении страницы: плавное появление открытки
+        document.querySelector('.birthday-card').style.opacity = '0';
+        document.querySelector('.birthday-card').style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            document.querySelector('.birthday-card').style.transition = 'all 0.6s ease-out';
+            document.querySelector('.birthday-card').style.opacity = '1';
+            document.querySelector('.birthday-card').style.transform = 'translateY(0)';
+        }, 50);
+        
+        // если пользователь захочет повторно нажать на кнопку, салют перезапустится
+        // также очищаем таймеры при разгрузке страницы
+        window.addEventListener('beforeunload', () => {
+            if (rocketInterval) clearInterval(rocketInterval);
+            if (animationId) cancelAnimationFrame(animationId);
+        });
+    })();
+</script>
+</body>
+</html>
